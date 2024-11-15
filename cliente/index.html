@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +7,25 @@
   <script type="module">
     import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js';
     const socket = io();
+
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const messages = document.getElementById('messages');
+
+    socket.on('chat message', (data) => {
+      const { text, color } = data;
+      const item = `<li style="color: ${color}">${text}</li>`;
+      messages.insertAdjacentHTML('beforeend', item);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (input.value) {
+        socket.emit('chat message', input.value);
+        input.value = '';
+      }
+    });
   </script>
 
   <style>
@@ -98,6 +116,7 @@
 <body>
   <h1>franChat</h1>
   <section id="chat">
+
     <!-- Área de mensajes -->
     <ul id="messages"></ul>
 
