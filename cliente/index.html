@@ -14,7 +14,7 @@
 
     socket.on('chat message', (data) => {
       const { text, color } = data;
-      const item = `<li style="color: ${color}">${text}</li>`;
+      const item = `<li style="background: ${color}">${text}</li>`;
       messages.insertAdjacentHTML('beforeend', item);
       messages.scrollTop = messages.scrollHeight;
     });
@@ -73,13 +73,8 @@
 
     #messages>li {
       padding: .5rem 1rem;
-      background: #eee;
       margin-bottom: 5px;
       border-radius: 4px;
-    }
-
-    #messages>li:nth-child(odd) {
-      background: #d0d0d0;
     }
 
     #form {
