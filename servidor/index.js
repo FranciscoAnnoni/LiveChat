@@ -11,6 +11,9 @@ import {createServer} from 'node:http'
 //Utilizacion del archivo .nev
 dotenv.config()
 
+//conexiones Activas
+let connectionctive = 0;
+
 //Declaracion del puerto
 const port = process.env.PORT ?? 3000
 
@@ -30,35 +33,70 @@ const io = new Server(server, {
 
 //Conexion con la Base de Datos
 const db = createClient({
-    url:"libsql://still-multiple-man-franciscoannoni.turso.io",
+    url:'libsql://still-multiple-man-franciscoannoni.turso.io',
     authToken: process.env.DB_TOKEN
 })
-// esto no m e funca
-/*
+// esto no me funca
+
 await db.execute(`
     CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         content TEXT
         )
     `)
-*/
+
     
-io.on('connection', (socket) =>
+io.on('connection', async (socket) =>
 {
+    connectionctive++;
     const userColor = getRandomColor();
     console.log('-------------------------------')
     console.log('================================')
+    
     console.log('a user has connected!')
+    console.log('gente conectada: ' + connectionctive);
 
     socket.on('disconnect', () => {
         console.log('an user has disconnected')
+        connectionctive--;
+        console.log('gente conectada: ' + connectionctive);
+
     })
     console.log('================================')
  
-    socket.on('chat message', (msg) => {
-        io.emit('chat message', { text: msg, color: userColor });
+    socket.on('chat message', async (msg) => {
+        let result
+        try {
+            result = await db.execute({
+                sql:`INSERT INTO messages (content) VALUES (:msg)`,
+                args: { msg}
+            })
+        } catch (e){
+            console.error(e)
+            return
+        }
+
+        io.emit('chat message', { text: msg, color: userColor, database: result.lastInsertRowid.toString()});
+
         console.log('message: ' + msg);
+       
       });
+
+      if(!socket.recovered) {
+        try {
+            const results = await db.execute({
+                sql: 'SELECT id, content FROM messages WHERE id > ?',
+                args: [socket.handshake.auth.serverOffset ?? 0]
+            })
+
+            results.rows.forEach(row => {
+                socket.emit('chat message', { text: row.content, color: userColor, database: row.id.toString()} )
+            })
+        }
+        catch (e){
+            console.error(e);
+        }
+      }
  
 })
 
