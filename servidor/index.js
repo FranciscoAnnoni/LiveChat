@@ -57,6 +57,7 @@ io.on('connection', async (socket) =>
 
     connectionctive++;
     const userColor = getRandomColor();
+    const userName = socket.handshake.auth.nombre || 'Invitado'; 
     console.log('-------------------------------')
     console.log('================================')
     
@@ -90,7 +91,7 @@ io.on('connection', async (socket) =>
             return
         }
 
-        io.emit('chat message', { text: msg, color: userColor, database: result.lastInsertRowid.toString()});
+        io.emit('chat message', { nombre: userName, text: msg, color: userColor, database: result.lastInsertRowid.toString()});
 
         console.log('message: ' + msg);
        
@@ -116,9 +117,18 @@ io.on('connection', async (socket) =>
 
 app.use(logger('dev')) //Una extencion que nos logea las cosas al pedo pero sirve para codear
 
+
 app.get('/',(req,res)=>{
+    res.sendFile(process.cwd() + '/cliente/index2.html')
+})
+
+app.get('/chat',(req,res)=>{
+    const nombre = req.query.nombre || 'Invitado'; // Si no hay "nombre", usa "Invitado"
+    console.log('Nombre del usuario:', nombre);
     res.sendFile(process.cwd() + '/cliente/index.html')
 })
+
+
 
 server.listen(port, () => {
     console.log(`server esta activo y escuchando en puerto *:${port}`)

@@ -8,7 +8,9 @@
     import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js';
     const socket = io({
       auth: {
-          serverOffset: 0 
+          serverOffset: 0,
+          nombre: new URLSearchParams(window.location.search).get('nombre') || 'Invitado' 
+  
       }
     }
 
@@ -19,8 +21,8 @@
     const messages = document.getElementById('messages');
 
     socket.on('chat message', (data) => {
-      const { text, color, database } = data;
-      const item = `<li style="background: ${color}">${text}</li>`;
+      const { nombre, text, color, database } = data;
+      const item = `<li style="background: ${color}">${nombre}: ${text}</li>`;
       messages.insertAdjacentHTML('beforeend', item);
       messages.scrollTop = messages.scrollHeight;
       socket.auth.serverOffset = database;
