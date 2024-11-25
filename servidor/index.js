@@ -38,42 +38,57 @@ const db = createClient({
 })
 
 
+// Crear tabla de usuarios si no existe
 await db.execute(`
-    CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        content TEXT
-        )
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT UNIQUE,
+        color TEXT
+    )
 `)
 
+// Crear tabla de mensajes si no existe
+await db.execute(`
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        content TEXT,
+        userName TEXT,
+        userColor TEXT,
+         user_id INTEGER,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+`)
     
 io.on('connection', async (socket) =>
 {
-    await db.execute(`
-        CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, 
-            content TEXT
-            )
-    `)
-
     connectionctive++;
-    const userColor = getRandomColor();
-    const userName = socket.handshake.auth.nombre || 'Invitado'; 
+
+    const userName = socket.handshake.auth.nombre; 
     console.log('-------------------------------')
     console.log('================================')
     
     console.log('a user has connected!')
     console.log('gente conectada: ' + connectionctive);
 
+    let userColor = await getUserColor(userName);
+
+    if (!userColor) {
+        // Si no tiene color, asignar uno nuevo
+        userColor = getRandomColor();
+        await assignColorToUser(userName, userColor);
+    }
+
     socket.on('disconnect', () => {
         console.log('an user has disconnected')
+        console.log(`Usuario desconectado: ${userName}`);
+        io.emit('chat message', { nombre: "App ", text: `Se desconecto ${userName}`, color: '#D3D3D3', database: ''});
+
         connectionctive--;
 
         console.log('gente conectada: ' + connectionctive);
 
         if(connectionctive == 0 ){
-        db.execute(`
-        DROP table messages; 
-        `)
+        resetAndRecreateTables(db)
         console.log('Se reseteo la base correctamente');
         }
     })
@@ -82,9 +97,12 @@ io.on('connection', async (socket) =>
     socket.on('chat message', async (msg) => {
         let result
         try {
+            const userId = await getUserId(userName);
+            const userColor = await getUserColor(userName);
+           // Insertar mensaje en la base de datos
             result = await db.execute({
-                sql:`INSERT INTO messages (content) VALUES (:msg)`,
-                args: { msg}
+                sql: `INSERT INTO messages (content, user_id, userName, userColor) VALUES (:msg, :userId, :userName, :userColor)`,
+                args: { msg, userId, userName, userColor }
             })
         } catch (e){
             console.error(e)
@@ -100,12 +118,12 @@ io.on('connection', async (socket) =>
       if(!socket.recovered) {
         try {
             const results = await db.execute({
-                sql: 'SELECT id, content FROM messages WHERE id > ?',
+                sql: 'SELECT id, content, userName, userColor FROM messages WHERE id > ?',
                 args: [socket.handshake.auth.serverOffset ?? 0]
             })
 
             results.rows.forEach(row => {
-                socket.emit('chat message', { text: row.content, color: userColor, database: row.id.toString()} )
+                socket.emit('chat message', { nombre: row.userName, text: row.content, color: row.userColor, database: row.id.toString()} ) 
             })
         }
         catch (e){
@@ -123,7 +141,13 @@ app.get('/',(req,res)=>{
 })
 
 app.get('/chat',(req,res)=>{
-    const nombre = req.query.nombre || 'Invitado'; // Si no hay "nombre", usa "Invitado"
+    const nombre = req.query.nombre; // Obtiene el nombre de los parámetros de consulta
+    
+    if (!nombre) {
+        // Si no hay nombre, redirige a la página principal
+        return res.redirect('/');
+    }
+
     console.log('Nombre del usuario:', nombre);
     res.sendFile(process.cwd() + '/cliente/index.html')
 })
@@ -134,6 +158,90 @@ server.listen(port, () => {
     console.log(`server esta activo y escuchando en puerto *:${port}`)
 })
 
+
+//---------------------------------------------------------------
+//===============================================================
+async function resetAndRecreateTables(db) {
+    try {
+        // Eliminar tabla de mensajes
+        await db.execute(`DROP TABLE IF EXISTS messages;`);
+        console.log("Tabla 'messages' eliminada.");
+
+        // Eliminar tabla de usuarios
+        await db.execute(`DROP TABLE IF EXISTS users;`);
+        console.log("Tabla 'users' eliminada.");
+
+        // Crear tabla de usuarios
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT UNIQUE,
+                color TEXT
+            )
+        `);
+        console.log("Tabla 'users' creada.");
+
+        // Crear tabla de mensajes
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                content TEXT,
+                userName TEXT,
+                userColor TEXT,
+                user_id INTEGER,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        `);
+        console.log("Tabla 'messages' creada.");
+    } catch (error) {
+        console.error("Error al reiniciar y recrear las tablas:", error);
+    }
+}
+
+
+//Funcion para obtener el color de usuario desde la base de datos
+async function getUserColor(userName) {
+    const result = await db.execute({
+        sql: 'SELECT color FROM users WHERE nombre = ?',
+        args: [userName]
+    });
+    return result.rows[0] ? result.rows[0].color : null;
+}
+
+//Funcion para obtener el color de usuario desde la base de datos
+async function getUserColorID(id) {
+    const result = await db.execute({
+        sql: 'SELECT color FROM users WHERE id = ?',
+        args: [id]
+    });
+    return result.rows[0] ? result.rows[0].color : null;
+}
+
+// Función que asigna un color al usuario en la base de datos
+async function assignColorToUser(userName, color) {
+    await db.execute({
+        sql: 'INSERT INTO users (nombre, color) VALUES (:nombre, :color)',
+        args: { nombre: userName, color }
+    });
+}
+
+// Función que obtiene el ID del usuario
+async function getUserId(userName) {
+    const result = await db.execute({
+        sql: 'SELECT id FROM users WHERE nombre = ?',
+        args: [userName]
+    });
+    return result.rows[0] ? result.rows[0].id : null;
+}
+
+// Función que obtiene el nombre del usuario desde su ID
+async function getUserName(id) {
+    const result = await db.execute({
+        sql: 'SELECT nombre FROM users WHERE id = ?',
+        args: [id]
+    });
+    return result.rows[0] ? result.rows[0].id : null;
+}
 
 // Funcion que utilizo para crear los colores claros para el Chat
 function getRandomColor() {
