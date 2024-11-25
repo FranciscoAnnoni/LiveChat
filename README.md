@@ -22,13 +22,21 @@ Esta aplicación es un servidor y cliente de chat desarrollado con **Node.js**, 
 
 ## Demo:
 
-1. ![image](https://github.com/user-attachments/assets/0243dfa4-4a12-46f5-8fb1-81eaa4631567)
+<p align="center">
+    <picture>
+	  <img width="200" src="https://github.com/user-attachments/assets/263965e7-3a29-4152-9385-7306f9ac3bd2">
+	</picture>
+	<picture>
+	  <img width="200" src="https://github.com/user-attachments/assets/ff9b8896-4aee-42ba-ac11-366aa9de6e3b">
+	</picture>
+	<picture>
+	  <img width="200" src="https://github.com/user-attachments/assets/815151a1-1f8e-46c8-8510-5b1abe77640e">
+	</picture>
+	<picture>
+	  <img width="200" src="https://github.com/user-attachments/assets/4a156fc8-b421-4d21-b8b3-369f636bd3b5">
+	</picture>
+</p>
 
-2. ![image](https://github.com/user-attachments/assets/ff9b8896-4aee-42ba-ac11-366aa9de6e3b)
-
-3. ![image](https://github.com/user-attachments/assets/815151a1-1f8e-46c8-8510-5b1abe77640e)
-
-4. ![image](https://github.com/user-attachments/assets/4a156fc8-b421-4d21-b8b3-369f636bd3b5)
 
 
 
