@@ -1,4 +1,6 @@
-# Chat App con Node.js y WebSockets
+# LIVE-CHAT
+
+## Chat App con Node.js y WebSockets
 
 Esta aplicación es un servidor y cliente de chat desarrollado con **Node.js**, **Express**, y **Socket.IO**, que permite a los usuarios interactuar en tiempo real a través de WebSockets. Los mensajes y los usuarios se gestionan en una base de datos SQLite utilizando `@libsql/client`.
 
