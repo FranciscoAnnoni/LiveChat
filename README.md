@@ -21,13 +21,14 @@ Esta aplicación es un servidor y cliente de chat desarrollado con **Node.js**, 
 - Configuración del archivo `.env` para las credenciales del servidor de la base de datos.
 
 ## Demo:
+![image]()
 
 <p align="center">
     <picture>
-	  <img width="200" src="https://github.com/user-attachments/assets/263965e7-3a29-4152-9385-7306f9ac3bd2">
+	  <img width="200" src="https://github.com/user-attachments/assets/e2caed3f-eaf4-4cdc-a93d-947cff4f9ec1">
 	</picture>
 	<picture>
-	  <img width="200" src="https://github.com/user-attachments/assets/ff9b8896-4aee-42ba-ac11-366aa9de6e3b">
+	  <img width="200" src="https://github.com/user-attachments/assets/a1016bfb-3203-486d-b2b7-2d53de5440af">
 	</picture>
 	<picture>
 	  <img width="200" src="https://github.com/user-attachments/assets/815151a1-1f8e-46c8-8510-5b1abe77640e">
