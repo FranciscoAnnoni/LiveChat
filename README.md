@@ -17,7 +17,7 @@ Esta aplicación es un servidor y cliente de chat desarrollado con **Node.js**, 
 
 - **Node.js** v16 o superior.
 - **npm** (incluido con Node.js).
-- **Base de datos SQLite** o su variante proporcionada por `@libsql/client`.
+- **Base de datos SQLite** || variante proporcionada por `@Turso/client`.
 - Configuración del archivo `.env` para las credenciales del servidor de la base de datos.
 
 ## Demo:
