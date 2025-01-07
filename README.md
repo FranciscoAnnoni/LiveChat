@@ -1,4 +1,4 @@
-#🟡 LIVE-CHAT 🟡
+# 🟡 LIVE-CHAT 🟡
 
 ## Chat App con Node.js y WebSockets
 
